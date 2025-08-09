@@ -16,28 +16,25 @@ function isValidPassword(password) {
     return regex.test(password);
 }
 
+// Add login/registration API calls
+async function registerUser(userData) {
+    const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    });
+    return response.json();
+}
 
-// Hash and store the password:
-// Use AWS Aurora
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
-const plainTextPassword = 'userPassword';
-bcrypt.hash(plainTextPassword, saltRounds, (err, hash) => {
-    if (err) throw err;
-    // Store hash in your password database.
-    console.log('Hashed Password:', hash);
-});
+async function loginUser(credentials) {
+    const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+    });
+    return response.json();
+}
 
 
 
-// Upon login attempt, compare user password with hashed password from database
 
-bcrypt.compare(plainTextPassword, storedHash, (err, result) => {
-    if (result) {
-        console.log('Authentication successful');
-        // Proceed with session creation or token generation
-    } else {
-        console.log('Authentication failed');
-        // Handle failed authentication
-    }
-});
