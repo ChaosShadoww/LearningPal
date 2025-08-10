@@ -1,48 +1,62 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const express = require('express');
 const session = require('express-session');
+const path = require('path');
+const cors = require('cors');
 
-// Password hashing (server-side only)
-const saltRounds = 10;
-async function hashPassword(plainTextPassword) {
-    return await bcrypt.hash(plainTextPassword, saltRounds);
-}
+// Import routes
+const authRoutes = require('./routes/auth');
+const learningRoutes = require('./routes/learning');
 
-// Password comparison (server-side only)
-async function verifyPassword(plainTextPassword, storedHash) {
-    return await bcrypt.compare(plainTextPassword, storedHash);
-}
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Environment variables (use .env file in production)
+const SESSION_SECRET = process.env.SESSION_SECRET || 'yourSessionSecret';
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(express.static('frontend'));
 
 // Session management setup
 app.use(session({
-    secret: 'yourSecretKey',
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
-// JWT middleware (server-side only)
-function authenticateToken(req, res, next) {
-    const token = req.headers['authorization'];
-    if (token) {
-        jwt.verify(token, 'yourSecretKey', (err, decoded) => {
-            if (err) {
-                return res.status(401).send('Unauthorized access');
-            } else {
-                req.user = decoded;
-                next();
-            }
-        });
-    } else {
-        return res.status(401).send('Token not provided');
-    }
-}
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', learningRoutes);
 
-// OTP generation and validation (server-side only)
-function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000);
-}
+// Serve HTML pages
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'auth_page.html'));
+});
 
-function validateOtp(inputOtp, storedOtp) {
-    return inputOtp === storedOtp;
-}
+app.get('/auth', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'auth_page.html'));
+});
+
+app.get('/home', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'home_page.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Frontend available at http://localhost:${PORT}`);
+});
