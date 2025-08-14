@@ -2,6 +2,9 @@
 
 A full-stack web application that generates personalized learning materials using AI. Transform any topic into flashcards, practice quizzes, study guides, or practice assignments tailored to your learning level and goals.
 
+This README only shows how to setup while using Linux, you have to adjust the commands for other operating systems.
+
+
 ## ✨ Features
 
 - **AI-Powered Content Generation** - Uses Google's Gemini AI to create personalized learning materials
@@ -224,33 +227,6 @@ LearningPal/
 - **Password Hashing** using bcrypt with salt rounds
 - **User Session Isolation** - users can only access their own data
 
-## 🌟 Cost Optimization
-
-- **Gemini 1.5 Flash** - Cost-effective AI model
-- **Local PostgreSQL** - No cloud database costs
-- **Efficient Queries** - Proper indexing and optimized database queries
-- **Session Caching** - Reduces redundant API calls
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📞 Support
-
-If you encounter issues:
-
-1. Check the troubleshooting section above
-2. Verify all environment variables are set correctly
-3. Ensure all prerequisites are installed
-4. Check server logs for specific error messages
 
 ## 🚀 Deployment
 
@@ -263,5 +239,3 @@ For production deployment, consider:
 - Setting up automated backups
 
 ---
-
-**Made with ❤️ for learners everywhere**

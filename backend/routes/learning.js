@@ -96,7 +96,7 @@ IMPORTANT: Always respond with valid JSON in this exact format:
 Based on the learning style requested:
 - If Flashcards/flashcards: Create 8-10 clear question-answer pairs that help memorize key concepts
 - If Practice Quizzes/quiz: Create 5-8 test questions that assess knowledge on the topic  
-- If Study Guide/guide: Create a comprehensive but clear study guide that presents the information
+- If Study Guide/guide: Create a comprehensive but clear study guide that presents the information. Make sure the information is complete, your goal is to teach the user in great depth, to make sure they truly learn the information.
 - If Practice Assignments/assignments: Create assignments with practice problems to learn by doing
 
 Always prioritize the source document content when provided, then supplement with your knowledge of the topic.
