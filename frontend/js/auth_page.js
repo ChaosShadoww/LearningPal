@@ -54,7 +54,7 @@ document.getElementById('register').addEventListener('submit', async (event) => 
     showLoading(true);
     
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -87,7 +87,7 @@ document.getElementById('login').addEventListener('submit', async (event) => {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -107,7 +107,7 @@ document.getElementById('login').addEventListener('submit', async (event) => {
             } else {
                 // Direct login success
                 localStorage.setItem('authToken', result.token);
-                window.location.href = '/home.html';
+                window.location.href = '/home';
             }
         } else {
             showMessage(result.message || 'Login failed. Please check your credentials.');
@@ -135,7 +135,7 @@ document.getElementById('mfa').addEventListener('submit', async (event) => {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/verify-mfa', {
+        const response = await fetch('/api/auth/verify-mfa', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ document.getElementById('mfa').addEventListener('submit', async (event) => {
             sessionStorage.removeItem('tempSession');
             showMessage('Login successful!', 'success');
             setTimeout(() => {
-                window.location.href = '/home.html';
+                window.location.href = '/home';
             }, 1000);
         } else {
             showMessage(result.message || 'Invalid verification code.');
@@ -186,7 +186,7 @@ document.getElementById('resend-code').addEventListener('click', async () => {
     }
     
     try {
-        const response = await fetch('/api/resend-mfa', {
+        const response = await fetch('/api/auth/resend-mfa', {
             method: 'POST',
             headers: { 
                 'Authorization': `Bearer ${tempToken}`
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('authToken');
     if (token) {
         // User is already logged in, redirect to home
-        window.location.href = '/home.html';
+        window.location.href = '/home';
     }
     
     // Add input formatting for MFA code

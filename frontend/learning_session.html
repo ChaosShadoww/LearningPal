@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearningPal - Your Learning Session</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LearningPal</h1>
+            <div class="header-actions">
+                <button id="back-home-btn">← Back to Home</button>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="loading" class="loading" style="display: block;">
+                <p>Loading your learning material...</p>
+            </div>
+
+            <div id="content-container" style="display: none;">
+                <div class="session-header">
+                    <h2 id="session-title">Your Learning Material</h2>
+                    <div class="session-info">
+                        <span id="learning-style-badge" class="badge"></span>
+                        <span id="session-date" class="date"></span>
+                    </div>
+                </div>
+
+                <!-- Flashcards Display -->
+                <div id="flashcards-container" class="content-display" style="display: none;">
+                    <div class="flashcard-controls">
+                        <button id="prev-card">← Previous</button>
+                        <span id="card-counter">1 / 10</span>
+                        <button id="next-card">Next →</button>
+                    </div>
+                    <div class="flashcard" id="current-flashcard">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <h3>Question</h3>
+                                <p id="flashcard-question">Loading...</p>
+                                <button id="flip-card">Show Answer</button>
+                            </div>
+                            <div class="flashcard-back">
+                                <h3>Answer</h3>
+                                <p id="flashcard-answer">Loading...</p>
+                                <button id="flip-back">Show Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Display -->
+                <div id="quiz-container" class="content-display" style="display: none;">
+                    <div class="quiz-header">
+                        <h3 id="quiz-question">Loading question...</h3>
+                        <span id="quiz-counter">Question 1 of 10</span>
+                    </div>
+                    <div class="quiz-options" id="quiz-options">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                    <div class="quiz-controls">
+                        <button id="submit-answer" disabled>Submit Answer</button>
+                        <button id="next-question" style="display: none;">Next Question</button>
+                    </div>
+                    <div id="quiz-feedback" class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Study Guide Display -->
+                <div id="study-guide-container" class="content-display" style="display: none;">
+                    <div class="study-guide-content" id="study-guide-content">
+                        <!-- Study guide content will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Practice Assignment Display -->
+                <div id="assignment-container" class="content-display" style="display: none;">
+                    <div class="assignment-content" id="assignment-content">
+                        <!-- Assignment content will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="save-session">💾 Save Session</button>
+                    <button id="regenerate-content">🔄 Regenerate Content</button>
+                    <button id="share-session">📤 Share Session</button>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            <div id="error-container" class="error-message" style="display: none;">
+                <p id="error-message">Failed to load learning session.</p>
+                <button id="retry-load">Try Again</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/learning_session.js"></script>
+</body>
+</html>

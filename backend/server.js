@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
@@ -17,7 +20,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'yourSessionSecret';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(express.static('frontend'));
+app.use(express.static(path.join(__dirname, '../frontend'))); // ← Fixed this line
 
 // Session management setup
 app.use(session({
@@ -27,9 +30,52 @@ app.use(session({
     cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
+// Add a simple test route
+app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working!', timestamp: new Date() });
+});
+
+
+
+
+
+
+//debugging middleware
+app.use((req, res, next) => {
+    console.log(`📝 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+});
+//debugging middleware
+app.use((req, res, next) => {
+    console.log(`📝 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+});
+
+console.log('🔧 Debugging middleware registered'); // Add this line
+
+
+
+
+
+
 // Routes
 app.use('/api/auth', authRoutes);
+
+
+console.log('Auth routes registered. Testing route stack...');
+authRoutes.stack.forEach((layer) => {
+    if (layer.route) {
+        console.log('Route:', layer.route.path, 'Methods:', Object.keys(layer.route.methods));
+    }
+});
+
+
+
 app.use('/api', learningRoutes);
+
+app.get('/learning-session/:sessionId', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'learning_session.html'));
+});
 
 // Serve HTML pages
 app.get('/', (req, res) => {
@@ -56,7 +102,7 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Frontend available at http://localhost:${PORT}`);
 });

@@ -1,36 +1,17 @@
 /*
-
-
-Displays the text: How may I help you learn today
-
-User has the option to input source document to learn that information or provide an input of the topic that they want to learn in the input box
-
-
-
-Input box 1: what topic user wants to learn about
-Input box 2: what is their desired goal
-Input box 3: what is User's current level of understanding on the topic
-Input box 4: optional input of source document
-Input box 5: learning style
-
-
-
-there also needs to be an input box checker.
-if the user inputs any malicous topics or tries to input any malicous scripts, return text:"Inappropriate input, please try again"
-
-
-learning styles are: Flashcards, Practice Quizes, Study Guide, Practice Assignments
-
-
-
-
-
-
-
-
-
+Home page functionality with saved sessions management
 */
 
+// DOM Elements
+const createTab = document.getElementById('create-tab');
+const sessionsTab = document.getElementById('sessions-tab');
+const createSection = document.getElementById('create-section');
+const sessionsSection = document.getElementById('sessions-section');
+const sessionsList = document.getElementById('sessions-list');
+const noSessionsDiv = document.getElementById('no-sessions');
+const sessionsLoading = document.getElementById('sessions-loading');
+const refreshSessionsBtn = document.getElementById('refresh-sessions');
+const createFirstSessionBtn = document.getElementById('create-first-session');
 
 // Input validation function
 function isInputSafe(input) {
@@ -111,6 +92,127 @@ function showLoading(show = true) {
     }
 }
 
+// Tab switching functionality
+function switchToCreateTab() {
+    createTab.classList.add('active');
+    sessionsTab.classList.remove('active');
+    createSection.style.display = 'block';
+    sessionsSection.style.display = 'none';
+}
+
+function switchToSessionsTab() {
+    createTab.classList.remove('active');
+    sessionsTab.classList.add('active');
+    createSection.style.display = 'none';
+    sessionsSection.style.display = 'block';
+    loadUserSessions();
+}
+
+// Load user sessions
+async function loadUserSessions() {
+    try {
+        sessionsLoading.style.display = 'block';
+        sessionsList.style.display = 'none';
+        noSessionsDiv.style.display = 'none';
+
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch('/api/user-sessions', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load sessions');
+        }
+
+        const sessions = await response.json();
+        displaySessions(sessions);
+
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        alert('Failed to load your sessions. Please try again.');
+    } finally {
+        sessionsLoading.style.display = 'none';
+    }
+}
+
+// Display sessions list
+function displaySessions(sessions) {
+    if (!sessions || sessions.length === 0) {
+        noSessionsDiv.style.display = 'block';
+        sessionsList.style.display = 'none';
+        return;
+    }
+
+    noSessionsDiv.style.display = 'none';
+    sessionsList.style.display = 'block';
+    
+    sessionsList.innerHTML = sessions.map(session => `
+        <div class="session-card" onclick="openSession('${session.sessionId}')">
+            <div class="session-header">
+                <h4 class="session-topic">${escapeHtml(session.topic)}</h4>
+                <span class="session-style">${session.learningStyle}</span>
+            </div>
+            <div class="session-meta">
+                <span class="session-date">${formatDate(session.createdAt)}</span>
+                <span class="session-actions">
+                    <button onclick="event.stopPropagation(); deleteSession('${session.sessionId}')" class="delete-btn" title="Delete session">🗑️</button>
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Utility functions
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+// Open session
+function openSession(sessionId) {
+    window.location.href = `/learning-session/${sessionId}`;
+}
+
+// Delete session
+async function deleteSession(sessionId) {
+    if (!confirm('Are you sure you want to delete this session?')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`/api/learning-session/${sessionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            loadUserSessions(); // Reload the list
+        } else {
+            throw new Error('Failed to delete session');
+        }
+
+    } catch (error) {
+        console.error('Error deleting session:', error);
+        alert('Failed to delete session. Please try again.');
+    }
+}
+
 // Handle form submission
 document.getElementById('learning-form').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -134,12 +236,18 @@ document.getElementById('learning-form').addEventListener('submit', async (event
     showLoading(true);
     
     try {
+        // Get token from localStorage
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+        
         // Send data to input_handler
         const response = await fetch('/api/generate-learning-material', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': localStorage.getItem('authToken') // JWT token
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formData)
         });
@@ -149,16 +257,31 @@ document.getElementById('learning-form').addEventListener('submit', async (event
             // Redirect to results page with session ID
             window.location.href = `/learning-session/${result.sessionId}`;
         } else {
-            throw new Error('Failed to generate learning material');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to generate learning material');
         }
         
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred while generating your learning material. Please try again.');
+        
+        // Handle specific error cases
+        if (error.message.includes('No authentication token') || error.message.includes('Unauthorized')) {
+            alert('Your session has expired. Please log in again.');
+            localStorage.removeItem('authToken');
+            window.location.href = '/auth.html';
+        } else {
+            alert('An error occurred while generating your learning material. Please try again.');
+        }
     } finally {
         showLoading(false);
     }
 });
+
+// Event listeners
+createTab.addEventListener('click', switchToCreateTab);
+sessionsTab.addEventListener('click', switchToSessionsTab);
+refreshSessionsBtn.addEventListener('click', loadUserSessions);
+createFirstSessionBtn.addEventListener('click', switchToCreateTab);
 
 // Logout functionality
 document.getElementById('logout-btn').addEventListener('click', () => {
@@ -167,9 +290,21 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 });
 
 // Check if user is authenticated on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('authToken');
     if (!token) {
         window.location.href = '/auth.html';
+        return;
+    }
+
+    // Try to get user info from token (optional enhancement)
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userNameSpan = document.getElementById('user-name');
+        if (userNameSpan && payload.name) {
+            userNameSpan.textContent = `Welcome, ${payload.name}!`;
+        }
+    } catch (error) {
+        console.log('Could not parse user info from token');
     }
 });

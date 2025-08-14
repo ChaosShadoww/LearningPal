@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearningPal - Learn Anything</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🎓 LearningPal</h1>
+                <div class="header-actions">
+                    <span id="user-name" class="user-welcome"></span>
+                    <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <h2 class="welcome-title">How may I help you learn today?</h2>
+                <p class="welcome-subtitle">Create personalized learning materials for any topic</p>
+            </section>
+
+            <!-- Toggle between Create and View Sessions -->
+            <section class="toggle-section">
+                <button id="create-tab" class="tab-btn active">Create New</button>
+                <button id="sessions-tab" class="tab-btn">My Sessions</button>
+            </section>
+
+            <!-- Create Learning Material Form -->
+            <section id="create-section" class="form-section">
+                <form id="learning-form" class="learning-form">
+                    <div class="form-group">
+                        <label for="topic">What topic do you want to learn about?</label>
+                        <input type="text" id="topic" name="topic" required 
+                               placeholder="e.g., JavaScript functions, Photosynthesis, Spanish grammar">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goal">What is your desired goal?</label>
+                        <textarea id="goal" name="goal" required 
+                                  placeholder="e.g., Master the basics for my upcoming exam, Understand concepts for work project"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="level">What is your current level of understanding?</label>
+                        <select id="level" name="level" required>
+                            <option value="">Select your level</option>
+                            <option value="Beginner">Beginner - I'm new to this topic</option>
+                            <option value="Intermediate">Intermediate - I have some knowledge</option>
+                            <option value="Advanced">Advanced - I'm familiar but want to deepen understanding</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source-document">Source Document (Optional)</label>
+                        <textarea id="source-document" name="sourceDocument" 
+                                  placeholder="Paste any text, notes, or documents you want to learn from..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="learning-style">Preferred Learning Style</label>
+                        <select id="learning-style" name="learningStyle" required>
+                            <option value="">Choose your learning style</option>
+                            <option value="Flashcards">Flashcards - Question and answer pairs</option>
+                            <option value="Practice Quizzes">Practice Quizzes - Test your knowledge</option>
+                            <option value="Study Guide">Study Guide - Comprehensive overview</option>
+                            <option value="Practice Assignments">Practice Assignments - Learn by doing</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="btn btn-primary">
+                        Generate Learning Material
+                    </button>
+                </form>
+
+                <!-- Error Message -->
+                <div id="error-message" class="error-message" style="display: none;">
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">Inappropriate input, please try again</span>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Generating your personalized learning material...</p>
+                </div>
+            </section>
+
+            <!-- Saved Sessions Section -->
+            <section id="sessions-section" class="sessions-section" style="display: none;">
+                <div class="sessions-header">
+                    <h3>My Learning Sessions</h3>
+                    <button id="refresh-sessions" class="btn btn-secondary">🔄 Refresh</button>
+                </div>
+                
+                <div id="sessions-loading" class="loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading your sessions...</p>
+                </div>
+
+                <div id="sessions-list" class="sessions-list">
+                    <!-- Sessions will be loaded here -->
+                </div>
+
+                <div id="no-sessions" class="no-sessions" style="display: none;">
+                    <div class="no-sessions-icon">📚</div>
+                    <h4>No learning sessions yet</h4>
+                    <p>Create your first learning session to get started!</p>
+                    <button id="create-first-session" class="btn btn-primary">Create Session</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/home_page.js"></script>
+</body>
+</html>
