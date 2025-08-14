@@ -35,7 +35,7 @@ Before running this application, make sure you have:
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/ChaosShadoww/LearningPal.git
 cd LearningPal
 ```
 
