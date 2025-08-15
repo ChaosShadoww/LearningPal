@@ -86,7 +86,9 @@ function displayContent() {
     document.getElementById('content-container').style.display = 'block';
 }
 
-// Display flashcards
+
+//Display flashcards
+// Enhanced flashcard display function
 function displayFlashcards(flashcards) {
     if (!flashcards || flashcards.length === 0) {
         showError('No flashcards available');
@@ -103,33 +105,268 @@ function displayFlashcards(flashcards) {
     document.getElementById('flashcard-question').textContent = currentCard.question;
     document.getElementById('flashcard-answer').textContent = currentCard.answer;
     
-    // Reset card to front
+    // Reset card to front (remove flipped class)
     const flashcard = document.querySelector('.flashcard');
     flashcard.classList.remove('flipped');
     
-    // Event listeners
-    document.getElementById('flip-card').onclick = () => {
-        document.querySelector('.flashcard').classList.add('flipped');
-    };
+    // Update navigation button states
+    updateNavigationButtons(flashcards.length);
     
-    document.getElementById('flip-back').onclick = () => {
-        document.querySelector('.flashcard').classList.remove('flipped');
-    };
+    // Set up event listeners (remove old ones first to prevent duplicates)
+    setupFlashcardEventListeners(flashcards);
+}
+
+function updateNavigationButtons(totalCards) {
+    const prevBtn = document.getElementById('prev-card');
+    const nextBtn = document.getElementById('next-card');
     
-    document.getElementById('prev-card').onclick = () => {
+    // Enable/disable buttons based on current position
+    prevBtn.disabled = currentCardIndex === 0;
+    nextBtn.disabled = currentCardIndex === totalCards - 1;
+    
+    // Update button text to show progress
+    prevBtn.textContent = currentCardIndex === 0 ? '← First Card' : '← Previous';
+    nextBtn.textContent = currentCardIndex === totalCards - 1 ? 'Last Card →' : 'Next →';
+}
+
+function setupFlashcardEventListeners(flashcards) {
+    // Remove existing event listeners to prevent duplicates
+    const oldFlipCard = document.getElementById('flip-card');
+    const oldFlipBack = document.getElementById('flip-back');
+    const oldPrevCard = document.getElementById('prev-card');
+    const oldNextCard = document.getElementById('next-card');
+    const oldFlashcard = document.querySelector('.flashcard');
+    
+    // Clone nodes to remove all event listeners
+    if (oldFlipCard) {
+        const newFlipCard = oldFlipCard.cloneNode(true);
+        oldFlipCard.parentNode.replaceChild(newFlipCard, oldFlipCard);
+    }
+    
+    if (oldFlipBack) {
+        const newFlipBack = oldFlipBack.cloneNode(true);
+        oldFlipBack.parentNode.replaceChild(newFlipBack, oldFlipBack);
+    }
+    
+    if (oldPrevCard) {
+        const newPrevCard = oldPrevCard.cloneNode(true);
+        oldPrevCard.parentNode.replaceChild(newPrevCard, oldPrevCard);
+    }
+    
+    if (oldNextCard) {
+        const newNextCard = oldNextCard.cloneNode(true);
+        oldNextCard.parentNode.replaceChild(newNextCard, oldNextCard);
+    }
+    
+    // Add new event listeners
+    
+    // Flip to back (show answer)
+    document.getElementById('flip-card').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent card click event
+        flipCard(true);
+    });
+    
+    // Flip to front (show question)
+    document.getElementById('flip-back').addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent card click event
+        flipCard(false);
+    });
+    
+    // Click anywhere on card to flip
+    document.querySelector('.flashcard').addEventListener('click', () => {
+        const flashcard = document.querySelector('.flashcard');
+        const isFlipped = flashcard.classList.contains('flipped');
+        flipCard(!isFlipped);
+    });
+    
+    // Keyboard support for accessibility
+    document.querySelector('.flashcard').addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+            e.preventDefault();
+            const flashcard = document.querySelector('.flashcard');
+            const isFlipped = flashcard.classList.contains('flipped');
+            flipCard(!isFlipped);
+        }
+    });
+    
+    // Navigation buttons
+    document.getElementById('prev-card').addEventListener('click', () => {
         if (currentCardIndex > 0) {
             currentCardIndex--;
             displayFlashcards(flashcards);
         }
-    };
+    });
     
-    document.getElementById('next-card').onclick = () => {
+    document.getElementById('next-card').addEventListener('click', () => {
         if (currentCardIndex < flashcards.length - 1) {
             currentCardIndex++;
             displayFlashcards(flashcards);
         }
-    };
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', handleKeyboardNavigation);
 }
+
+function flipCard(showAnswer) {
+    const flashcard = document.querySelector('.flashcard');
+    
+    if (showAnswer) {
+        flashcard.classList.add('flipped');
+        // Focus on the back button for accessibility
+        setTimeout(() => {
+            document.getElementById('flip-back').focus();
+        }, 300); // Wait for flip animation
+    } else {
+        flashcard.classList.remove('flipped');
+        // Focus on the front button for accessibility
+        setTimeout(() => {
+            document.getElementById('flip-card').focus();
+        }, 300); // Wait for flip animation
+    }
+}
+
+function handleKeyboardNavigation(e) {
+    // Only handle keyboard nav when flashcards are visible
+    const flashcardsContainer = document.getElementById('flashcards-container');
+    if (flashcardsContainer.style.display === 'none') {
+        return;
+    }
+    
+    const flashcard = document.querySelector('.flashcard');
+    const isFlipped = flashcard.classList.contains('flipped');
+    
+    switch (e.code) {
+        case 'ArrowLeft':
+            e.preventDefault();
+            document.getElementById('prev-card').click();
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            document.getElementById('next-card').click();
+            break;
+        case 'ArrowUp':
+        case 'ArrowDown':
+            e.preventDefault();
+            flipCard(!isFlipped);
+            break;
+        case 'Space':
+            e.preventDefault();
+            flipCard(!isFlipped);
+            break;
+    }
+}
+
+// Auto-flip feature (optional)
+function enableAutoFlip(intervalMs = 5000) {
+    let autoFlipInterval;
+    
+    function startAutoFlip() {
+        autoFlipInterval = setInterval(() => {
+            const flashcard = document.querySelector('.flashcard');
+            const isFlipped = flashcard.classList.contains('flipped');
+            
+            if (!isFlipped) {
+                flipCard(true);
+            } else {
+                // Move to next card or flip back to question
+                const totalCards = parseInt(document.getElementById('card-counter').textContent.split(' / ')[1]);
+                if (currentCardIndex < totalCards - 1) {
+                    document.getElementById('next-card').click();
+                } else {
+                    flipCard(false);
+                }
+            }
+        }, intervalMs);
+    }
+    
+    function stopAutoFlip() {
+        if (autoFlipInterval) {
+            clearInterval(autoFlipInterval);
+            autoFlipInterval = null;
+        }
+    }
+    
+    // Add auto-flip controls
+    const flashcardsContainer = document.getElementById('flashcards-container');
+    if (!document.getElementById('auto-flip-toggle')) {
+        const autoFlipButton = document.createElement('button');
+        autoFlipButton.id = 'auto-flip-toggle';
+        autoFlipButton.textContent = 'Start Auto-Flip';
+        autoFlipButton.style.marginTop = '1rem';
+        autoFlipButton.className = 'btn btn-secondary';
+        
+        autoFlipButton.addEventListener('click', () => {
+            if (autoFlipInterval) {
+                stopAutoFlip();
+                autoFlipButton.textContent = 'Start Auto-Flip';
+            } else {
+                startAutoFlip();
+                autoFlipButton.textContent = 'Stop Auto-Flip';
+            }
+        });
+        
+        flashcardsContainer.appendChild(autoFlipButton);
+    }
+    
+    // Stop auto-flip when user interacts
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.flashcard') || e.target.closest('.flashcard-controls')) {
+            stopAutoFlip();
+            const toggleBtn = document.getElementById('auto-flip-toggle');
+            if (toggleBtn) {
+                toggleBtn.textContent = 'Start Auto-Flip';
+            }
+        }
+    });
+}
+
+// Enhanced display function that handles the content properly
+function displayContent() {
+    const { content, inputs } = currentSession;
+    const learningStyle = inputs.learningStyle;
+
+    console.log('🎯 Learning style:', learningStyle);
+    console.log('📊 Content structure:', content);
+
+    // Update session header
+    document.getElementById('session-title').textContent = `Learning: ${inputs.topic}`;
+    document.getElementById('learning-style-badge').textContent = learningStyle;
+    document.getElementById('session-date').textContent = new Date(currentSession.createdAt).toLocaleDateString();
+
+    // Hide all content containers
+    document.querySelectorAll('.content-display').forEach(container => {
+        container.style.display = 'none';
+    });
+
+    // Show appropriate content based on learning style
+    switch (learningStyle) {
+        case 'Flashcards':
+            displayFlashcards(content.content.flashcards);
+            // Optional: Enable auto-flip feature
+            // enableAutoFlip(8000); // Auto-flip every 8 seconds
+            break;
+        case 'Practice Quizzes':
+            displayQuiz(content.content.quiz);
+            break;
+        case 'Study Guide':
+            displayStudyGuide(content.content.studyGuide);
+            break;
+        case 'Practice Assignments':
+            displayAssignment(content.content.assignment);
+            break;
+        default:
+            console.error('❌ Unknown learning style:', learningStyle);
+            showError(`Unknown learning style: "${learningStyle}". Available styles: Flashcards, Practice Quizzes, Study Guide, Practice Assignments`);
+    }
+
+    document.getElementById('content-container').style.display = 'block';
+}
+
+// Clean up event listeners when leaving the page
+window.addEventListener('beforeunload', () => {
+    document.removeEventListener('keydown', handleKeyboardNavigation);
+});
 
 // Display quiz
 function displayQuiz(quizQuestions) {

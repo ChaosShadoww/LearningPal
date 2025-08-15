@@ -94,8 +94,8 @@ IMPORTANT: Always respond with valid JSON in this exact format:
 }
 
 Based on the learning style requested:
-- If Flashcards/flashcards: Create 8-10 clear question-answer pairs that help memorize key concepts
-- If Practice Quizzes/quiz: Create 5-8 test questions that assess knowledge on the topic  
+- If Flashcards/flashcards: Create as many clear question-answer pairs as needed to help memorize key concepts
+- If Practice Quizzes/quiz: Create 15-20 test questions that assess knowledge on the topic  
 - If Study Guide/guide: Create a comprehensive but clear study guide that presents the information. Make sure the information is complete, your goal is to teach the user in great depth, to make sure they truly learn the information.
 - If Practice Assignments/assignments: Create assignments with practice problems to learn by doing
 
@@ -173,28 +173,24 @@ Always generate content for ALL four types (flashcards, quiz, studyGuide, assign
             
             console.log('🤖 Raw Gemini response:', text.substring(0, 500) + '...');
             
-            // Parse the JSON response
+            // Parse the JSON response with enhanced error handling
             let parsedResponse;
             try {
                 // Clean the response in case there are markdown code blocks
-                const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                let cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                
+                // Fix common JSON formatting issues from Gemini
+                cleanText = this.fixJsonFormatting(cleanText);
+                
                 parsedResponse = JSON.parse(cleanText);
                 console.log('✅ Successfully parsed JSON response');
                 console.log('📊 Response structure:', Object.keys(parsedResponse));
             } catch (parseError) {
                 console.error('JSON parsing error:', parseError);
-                console.error('Raw response:', text);
+                console.error('Raw response:', text.substring(0, 500) + '...');
                 
-                // Fallback: create a basic structure
-                parsedResponse = {
-                    type: 'learning_material',
-                    content: {
-                        flashcards: [],
-                        quiz: [],
-                        studyGuide: text,
-                        assignment: text
-                    }
-                };
+                // Try alternative parsing methods
+                parsedResponse = this.tryAlternativeParsing(text);
             }
             
             // Add timestamp
@@ -233,6 +229,165 @@ Always generate content for ALL four types (flashcards, quiz, studyGuide, assign
 
     generateSessionId() {
         return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Helper method to fix common JSON formatting issues from Gemini
+    fixJsonFormatting(jsonString) {
+        try {
+            // Remove trailing commas before closing brackets/braces
+            let fixed = jsonString
+                .replace(/,(\s*[}\]])/g, '$1')  // Remove trailing commas
+                .replace(/}\s*,\s*]/g, '}]')    // Fix array of objects ending
+                .replace(/,(\s*})/g, '$1')      // Remove comma before closing brace
+                .replace(/,(\s*])/g, '$1');     // Remove comma before closing bracket
+            
+            // Try to fix incomplete JSON structures
+            const openBraces = (fixed.match(/{/g) || []).length;
+            const closeBraces = (fixed.match(/}/g) || []).length;
+            const openBrackets = (fixed.match(/\[/g) || []).length;
+            const closeBrackets = (fixed.match(/]/g) || []).length;
+            
+            // Add missing closing braces
+            for (let i = 0; i < openBraces - closeBraces; i++) {
+                fixed += '}';
+            }
+            
+            // Add missing closing brackets
+            for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                fixed += ']';
+            }
+            
+            console.log('🔧 JSON formatting fixes applied');
+            return fixed;
+            
+        } catch (error) {
+            console.error('Error fixing JSON formatting:', error);
+            return jsonString; // Return original if fixing fails
+        }
+    }
+
+    // Alternative parsing method for malformed JSON
+    tryAlternativeParsing(text) {
+        try {
+            console.log('🔄 Attempting alternative JSON parsing...');
+            
+            // Clean the text
+            let cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            
+            // Apply multiple fixing strategies
+            cleanText = this.fixJsonFormatting(cleanText);
+            
+            // Try parsing again
+            const parsed = JSON.parse(cleanText);
+            console.log('✅ Alternative parsing successful');
+            return parsed;
+            
+        } catch (alternativeError) {
+            console.error('❌ Alternative parsing also failed:', alternativeError);
+            
+            // Extract what we can from the malformed JSON
+            return this.extractPartialJson(text);
+        }
+    }
+
+    // Extract partial content from malformed JSON
+    extractPartialJson(text) {
+        console.log('🔧 Extracting partial content from malformed JSON...');
+        
+        const fallbackResponse = {
+            type: 'learning_material',
+            content: {
+                flashcards: [],
+                quiz: [],
+                studyGuide: '',
+                assignment: ''
+            }
+        };
+        
+        try {
+            // Try to extract flashcards using regex
+            const flashcardMatch = text.match(/"flashcards":\s*\[(.*?)\]/s);
+            if (flashcardMatch) {
+                const flashcardText = '[' + flashcardMatch[1] + ']';
+                try {
+                    // Clean up the flashcard JSON
+                    const cleanFlashcards = flashcardText
+                        .replace(/,(\s*[}\]])/g, '$1')
+                        .replace(/}\s*,\s*]/g, '}]');
+                    
+                    const flashcards = JSON.parse(cleanFlashcards);
+                    if (Array.isArray(flashcards)) {
+                        fallbackResponse.content.flashcards = flashcards;
+                        console.log('✅ Extracted', flashcards.length, 'flashcards');
+                    }
+                } catch (flashcardError) {
+                    console.error('Failed to parse extracted flashcards:', flashcardError);
+                }
+            }
+            
+            // Try to extract study guide
+            const studyGuideMatch = text.match(/"studyGuide":\s*"(.*?)"/s);
+            if (studyGuideMatch) {
+                fallbackResponse.content.studyGuide = studyGuideMatch[1];
+                console.log('✅ Extracted study guide');
+            }
+            
+            // Try to extract assignment
+            const assignmentMatch = text.match(/"assignment":\s*"(.*?)"/s);
+            if (assignmentMatch) {
+                fallbackResponse.content.assignment = assignmentMatch[1];
+                console.log('✅ Extracted assignment');
+            }
+            
+            // Try to extract quiz
+            const quizMatch = text.match(/"quiz":\s*\[(.*?)\]/s);
+            if (quizMatch) {
+                const quizText = '[' + quizMatch[1] + ']';
+                try {
+                    const cleanQuiz = quizText
+                        .replace(/,(\s*[}\]])/g, '$1')
+                        .replace(/}\s*,\s*]/g, '}]');
+                    
+                    const quiz = JSON.parse(cleanQuiz);
+                    if (Array.isArray(quiz)) {
+                        fallbackResponse.content.quiz = quiz;
+                        console.log('✅ Extracted', quiz.length, 'quiz questions');
+                    }
+                } catch (quizError) {
+                    console.error('Failed to parse extracted quiz:', quizError);
+                }
+            }
+            
+        } catch (extractError) {
+            console.error('Error during partial extraction:', extractError);
+        }
+        
+        // If we couldn't extract anything useful, create basic content
+        if (fallbackResponse.content.flashcards.length === 0 && 
+            !fallbackResponse.content.studyGuide && 
+            !fallbackResponse.content.assignment) {
+            
+            fallbackResponse.content = {
+                flashcards: [
+                    {
+                        question: "Content generation encountered an error",
+                        answer: "Please try generating again or contact support"
+                    }
+                ],
+                quiz: [
+                    {
+                        question: "What should you do if content generation fails?",
+                        options: ["A) Try again", "B) Contact support", "C) Check your input", "D) All of the above"],
+                        correct: "D"
+                    }
+                ],
+                studyGuide: "Content generation encountered an error. Please try again.",
+                assignment: "Please regenerate the content to get your practice assignment."
+            };
+        }
+        
+        console.log('🔧 Partial extraction completed');
+        return fallbackResponse;
     }
 
     async storeLearningSession(session) {
