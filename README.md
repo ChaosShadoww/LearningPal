@@ -150,48 +150,7 @@ Open your browser and go to: `http://localhost:3000`
 - Delete sessions you no longer need
 - Sessions are automatically saved when generated
 
-## 🔧 Troubleshooting
 
-### Common Issues:
-
-**Database Connection Error:**
-```bash
-# Check if PostgreSQL is running
-sudo systemctl status postgresql
-
-# Start PostgreSQL if needed
-sudo systemctl start postgresql
-```
-
-**Gemini API Error:**
-- Verify your API key is correct in `.env`
-- Check if you have API quota remaining
-- Ensure the key has proper permissions
-
-**Email Not Sending:**
-- Verify Gmail app password (not regular password)
-- Check if 2FA is enabled on your Google account
-- Confirm email settings in `.env`
-
-**Port Already in Use:**
-```bash
-# Find process using port 3000
-lsof -i :3000
-
-# Kill the process
-kill -9 <PID>
-```
-
-### Reset Database:
-```sql
--- Connect to PostgreSQL
-sudo -u postgres psql
-
--- Drop and recreate database
-DROP DATABASE learningpal;
-CREATE DATABASE learningpal;
-GRANT ALL PRIVILEGES ON DATABASE learningpal TO learningpal_user;
-```
 
 
 ```
