@@ -129,7 +129,7 @@ Learning sessions table initialized successfully
 
 Open your browser and go to: `http://localhost:3000`
 
-## 📱 How to Use
+## How to Use
 
 ### First Time Setup:
 1. **Register**: Create an account with your email and password
