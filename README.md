@@ -1,10 +1,10 @@
-# 🎓 LearningPal
+# LearningPal
 
 A full-stack web application that generates personalized learning materials using AI. Transform any topic into flashcards, practice quizzes, study guides, or practice assignments tailored to your learning level and goals.
 
 This README only shows how to setup while using Linux, you have to adjust the commands for other operating systems.
 
-## ✨ Features
+## Features
 
 - **AI-Powered Content Generation** - Uses Google's Gemini AI to create personalized learning materials
 - **Multiple Learning Styles** - Flashcards, Practice Quizzes, Study Guides, Practice Assignments
@@ -13,7 +13,7 @@ This README only shows how to setup while using Linux, you have to adjust the co
 - **Source Document Support** - Upload your own materials for AI to process
 - **Responsive Design** - Works on desktop and mobile devices
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: HTML, CSS, JavaScript (Vanilla)
 - **Backend**: Node.js, Express.js
@@ -22,7 +22,7 @@ This README only shows how to setup while using Linux, you have to adjust the co
 - **Authentication**: JWT with email-based 2FA
 - **Email**: Nodemailer with Gmail
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running this application, make sure you have:
 
@@ -31,7 +31,7 @@ Before running this application, make sure you have:
 - **Gmail account** with app password for email functionality
 - **Google AI Studio API key** - [Get one here](https://makersuite.google.com/app/apikey)
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### 1. Clone the Repository
 ```bash
@@ -193,31 +193,10 @@ CREATE DATABASE learningpal;
 GRANT ALL PRIVILEGES ON DATABASE learningpal TO learningpal_user;
 ```
 
-## 📁 Project Structure
 
 ```
-LearningPal/
-├── backend/
-│   ├── routes/
-│   │   ├── auth.js          # Authentication endpoints
-│   │   └── learning.js      # Learning material generation
-│   ├── server.js            # Main server file
-│   ├── package.json         # Dependencies
-│   └── .env                 # Environment variables
-├── frontend/
-│   ├── auth_page.html       # Login/Register page
-│   ├── home_page.html       # Main dashboard
-│   ├── learning_session.html # Content display page
-│   ├── js/
-│   │   ├── auth_page.js     # Authentication logic
-│   │   ├── home_page.js     # Dashboard functionality
-│   │   └── learning_session.js # Content display logic
-│   └── styles/
-│       └── styles.css       # Application styling
-└── README.md
-```
 
-## 🔐 Security Features
+## Security Features
 
 - **JWT Authentication** with 24-hour expiration
 - **Email-based 2FA** with 10-minute OTP expiration
@@ -227,7 +206,7 @@ LearningPal/
 - **User Session Isolation** - users can only access their own data
 
 
-## 🚀 Deployment
+## Deployment
 
 For production deployment, consider:
 
